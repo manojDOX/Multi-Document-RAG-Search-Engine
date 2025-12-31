@@ -119,8 +119,16 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory:
 
 ```env
-GROQ_API_KEY=your_groq_api_key
-TAVILY_API_KEY=your_tavily_api_key
+GPT_MODEL_NAME=
+GROQ_API_KEY=
+TEMPRATURE=
+FAISS_INDEX_PATH=
+EMBEDDING_MODEL=
+CHUNK_SIZE=
+CHUNK_OVERLAP=
+TOP_K_RESULTS=
+TAVILY_API_KEY=
+TOP_K_WEB_RESULTS=
 ```
 
 ---
@@ -239,4 +247,5 @@ This project is for **educational and portfolio purposes**.
 You are free to modify and extend it.
 
 ---
+
 
