@@ -2,6 +2,12 @@
 
 # 🧠 Multi-Document Hybrid RAG Search Engine (GA02)
 
+Name: Manoj B
+
+Mail Id: manoj2882003@gmail.com
+
+**[APP LINK](https://multi-document-rag-search-engine-dox.streamlit.app/)**
+
 A **Hybrid Retrieval-Augmented Generation (RAG) Search Engine** that allows users to query **multiple uploaded documents** and optionally augment answers with **real-time web search** using Tavily — all through a clean **Streamlit chatbot UI**.
 
 This project mirrors real-world **enterprise copilots and research assistants** that combine **private knowledge bases** with **live internet data**, while maintaining transparency through **citations and summaries**.
@@ -247,5 +253,6 @@ This project is for **educational and portfolio purposes**.
 You are free to modify and extend it.
 
 ---
+
 
 
