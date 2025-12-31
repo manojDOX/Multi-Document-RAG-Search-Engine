@@ -9,16 +9,38 @@ from ui.components import save_uploaded_file
 
 
 class ChatInterface:
+    """
+    This class manages the chat interaction layer.
+    It connects document ingestion, vector search,
+    web search, and response generation for the UI.
+    """
+
     def __init__(self):
+        """
+        Initializes all required components for the chat interface.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         self.doc_processor = DocumentProcessor()
         self.vector_store = VectorStoreManager()
         self.rag_chain: Optional[RAGChain] = None
         self.tavily = TavilySearchTool()
 
-    # ==========================================================
-    # DOCUMENT INGESTION (EXPLICIT BUTTON DRIVEN)
-    # ==========================================================
     def process_uploaded_files(self, uploaded_files) -> int:
+        """
+        Processes uploaded files, splits them into chunks,
+        and stores them in the vector database.
+
+        Args:
+            uploaded_files: List of uploaded files from the UI.
+
+        Returns:
+            Total number of document chunks created.
+        """
         all_chunks = []
 
         for uploaded_file in uploaded_files:
@@ -43,22 +65,34 @@ class ChatInterface:
 
         return len(all_chunks)
 
-    # ==========================================================
-    # RAG INITIALIZATION
-    # ==========================================================
     def initialize_rag_chain(self):
+        """
+        Initializes the RAG chain if the vector store is ready.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         if self.vector_store.is_initialized and self.rag_chain is None:
             self.rag_chain = RAGChain(self.vector_store)
 
-    # ==========================================================
-    # RESPONSE GENERATION (USER-SELECTED MODE)
-    # ==========================================================
     def get_response(
         self,
         query: str,
         retrieval_mode: str
     ) -> Generator[str, None, None]:
+        """
+        Generates a response based on the selected retrieval mode.
 
+        Args:
+            query: User query string.
+            retrieval_mode: Retrieval mode selection.
+
+        Returns:
+            A generator yielding response tokens or text.
+        """
         if self.rag_chain is None and self.vector_store.is_initialized:
             self.initialize_rag_chain()
 
@@ -69,7 +103,6 @@ class ChatInterface:
             "doc_summaries": []
         }
 
-        # ---------------- DOCUMENT ----------------
         if retrieval_mode == "doc":
             if not self.vector_store.is_initialized:
                 yield "❗ Please process documents first."
@@ -85,7 +118,6 @@ class ChatInterface:
                 yield token
             return
 
-        # ---------------- WEB ----------------
         if retrieval_mode == "web":
             web_docs = self.tavily.as_documents(query)
             st.session_state.last_answer_meta["web_docs"] = web_docs
@@ -99,7 +131,6 @@ class ChatInterface:
             yield answer
             return
 
-        # ---------------- HYBRID ----------------
         if retrieval_mode == "hybrid":
             docs = []
             if self.vector_store.is_initialized:
@@ -127,10 +158,17 @@ class ChatInterface:
             answer = self.rag_chain.generate(query, context)
             yield answer
 
-    # ==========================================================
-    # SOURCE LIST FOR CHAT HISTORY
-    # ==========================================================
     def get_sources(self, query: str, retrieval_mode: str) -> List[str]:
+        """
+        Returns a list of sources used to generate the response.
+
+        Args:
+            query: User query string.
+            retrieval_mode: Retrieval mode selection.
+
+        Returns:
+            A list of source labels.
+        """
         sources = []
 
         if retrieval_mode in ("doc", "hybrid") and self.vector_store.is_initialized:

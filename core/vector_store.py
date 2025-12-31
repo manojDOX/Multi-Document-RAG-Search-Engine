@@ -1,19 +1,3 @@
-"""
-Vector Store Module
-===================
-DAY 2: This module handles FAISS vector database operations.
-
-SOLID Principle: Single Responsibility Principle (SRP)
-- This class has ONE job: manage the vector store
-
-Topics to teach:
-- What is a vector database?
-- FAISS (Facebook AI Similarity Search)
-- Indexing documents
-- Similarity search
-- Persistence (save/load)
-"""
-
 import os
 from typing import List, Optional
 
@@ -26,48 +10,60 @@ from core.embedding import EmbeddingManager
 
 class VectorStoreManager:
     """
-    Manages FAISS vector store operations.
-
-    FAISS is a FREE, local vector database that runs entirely on your machine.
-    No external services or API costs!
+    This class manages the FAISS vector store.
+    It is responsible for creating, updating, searching,
+    saving, and loading vector indexes.
     """
 
     def __init__(self, embedding_manager: EmbeddingManager = None):
         """
-        Initialize the vector store manager.
+        Initializes the vector store manager.
 
         Args:
-            embedding_manager: EmbeddingManager instance (creates one if not provided)
+            embedding_manager: Optional embedding manager instance.
+
+        Returns:
+            None
         """
         self.embedding_manager = embedding_manager or EmbeddingManager()
         self._vector_store: Optional[FAISS] = None
         self.index_path = settings._FAISS_INDEX_PATH
 
-    # --------------------------------------------------
-    # Properties
-    # --------------------------------------------------
     @property
     def vector_store(self) -> Optional[FAISS]:
-        """Return the FAISS vector store instance."""
+        """
+        Returns the current vector store instance.
+
+        Args:
+            None
+
+        Returns:
+            The FAISS vector store or None if not initialized.
+        """
         return self._vector_store
 
     @property
     def is_initialized(self) -> bool:
-        """Check whether the vector store is initialized."""
-        return self._vector_store is not None
-
-    # --------------------------------------------------
-    # Index creation & updates
-    # --------------------------------------------------
-    def create_from_documents(self, documents: List[Document]) -> FAISS:
         """
-        Create a new FAISS vector store from documents.
+        Checks whether the vector store is initialized.
 
         Args:
-            documents: List of Document objects to index
+            None
 
         Returns:
-            FAISS vector store instance
+            True if initialized, otherwise False.
+        """
+        return self._vector_store is not None
+
+    def create_from_documents(self, documents: List[Document]) -> FAISS:
+        """
+        Creates a new vector store from documents.
+
+        Args:
+            documents: List of documents to index.
+
+        Returns:
+            The created FAISS vector store.
         """
         documents = [doc for doc in documents if doc.page_content.strip()]
 
@@ -79,8 +75,13 @@ class VectorStoreManager:
 
     def add_documents(self, documents: List[Document]) -> None:
         """
-        Add documents to an existing vector store.
-        Creates a new one if not initialized.
+        Adds documents to the vector store.
+
+        Args:
+            documents: List of documents to add.
+
+        Returns:
+            None
         """
         documents = [doc for doc in documents if doc.page_content.strip()]
 
@@ -89,19 +90,16 @@ class VectorStoreManager:
         else:
             self._vector_store.add_documents(documents)
 
-    # --------------------------------------------------
-    # Search
-    # --------------------------------------------------
     def search(self, query: str, k: int = None) -> List[Document]:
         """
-        Perform similarity search.
+        Performs a similarity search.
 
         Args:
-            query: Search query
-            k: Number of results (default from settings)
+            query: Search query string.
+            k: Number of results to return.
 
         Returns:
-            List of relevant Document objects
+            A list of matching documents.
         """
         if not self.is_initialized:
             raise ValueError("Vector store is not initialized. Add documents first.")
@@ -111,7 +109,14 @@ class VectorStoreManager:
 
     def search_with_scores(self, query: str, k: int = None) -> List[tuple]:
         """
-        Perform similarity search with relevance scores.
+        Performs a similarity search with relevance scores.
+
+        Args:
+            query: Search query string.
+            k: Number of results to return.
+
+        Returns:
+            A list of document-score tuples.
         """
         if not self.is_initialized:
             raise ValueError("Vector store is not initialized. Add documents first.")
@@ -119,12 +124,15 @@ class VectorStoreManager:
         k = k or settings.TOP_K_RESULTS
         return self._vector_store.similarity_search_with_score(query, k=k)
 
-    # --------------------------------------------------
-    # Persistence
-    # --------------------------------------------------
     def save(self, path: str = None) -> None:
         """
-        Save FAISS index to disk.
+        Saves the vector store to disk.
+
+        Args:
+            path: Optional path to save the index.
+
+        Returns:
+            None
         """
         if not self.is_initialized:
             raise ValueError("Vector store is not initialized. Nothing to save.")
@@ -135,12 +143,13 @@ class VectorStoreManager:
 
     def load(self, path: str = None) -> FAISS:
         """
-        Load FAISS index from disk.
+        Loads the vector store from disk.
 
-        NOTE:
-        allow_dangerous_deserialization=True is required for FAISS
-        because it uses pickle internally. This is SAFE for trusted
-        local files created by this application.
+        Args:
+            path: Optional path to load the index from.
+
+        Returns:
+            The loaded FAISS vector store.
         """
         load_path = path or self.index_path
 
@@ -154,12 +163,15 @@ class VectorStoreManager:
         )
         return self._vector_store
 
-    # --------------------------------------------------
-    # Retriever interface
-    # --------------------------------------------------
     def get_retriever(self, k: int = None):
         """
-        Return a LangChain-compatible retriever.
+        Returns a retriever interface for the vector store.
+
+        Args:
+            k: Number of results to retrieve.
+
+        Returns:
+            A LangChain-compatible retriever.
         """
         if not self.is_initialized:
             raise ValueError("Vector store is not initialized.")
@@ -170,9 +182,14 @@ class VectorStoreManager:
             search_kwargs={"k": k}
         )
 
-    # --------------------------------------------------
-    # Cleanup
-    # --------------------------------------------------
     def clear(self) -> None:
-        """Clear vector store from memory."""
+        """
+        Clears the vector store from memory.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         self._vector_store = None

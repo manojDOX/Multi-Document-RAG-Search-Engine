@@ -4,13 +4,15 @@ import tempfile
 import os
 
 
-# --------------------------------------------------
-# Session State
-# --------------------------------------------------
-
 def retrieval_mode_selector() -> str:
     """
-    Let user choose retrieval strategy.
+    Allows the user to select the retrieval mode for answering queries.
+
+    Args:
+        None
+
+    Returns:
+        The selected retrieval mode as a string.
     """
     return st.radio(
         "🔍 Retrieval Mode",
@@ -22,22 +24,38 @@ def retrieval_mode_selector() -> str:
         }[x],
         index=0
     )
+
+
 def process_documents_button() -> bool:
+    """
+    Displays a button to trigger document processing.
+
+    Args:
+        None
+
+    Returns:
+        True if the button is clicked, otherwise False.
+    """
     return st.button(
         "🚀 Process & Index Documents",
         help="Click to chunk and embed uploaded documents"
     )
 
 
-import streamlit as st
-
-
 def display_answer_metadata():
+    """
+    Displays metadata related to the most recent answer.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     meta = st.session_state.get("last_answer_meta")
     if not meta:
         return
 
-    # ---------- Visual Indicator (smaller heading) ----------
     indicator_map = {
         "doc": "📄 Document-based answer",
         "web": "🌐 Web-based answer",
@@ -53,7 +71,6 @@ def display_answer_metadata():
 
     st.markdown("---")
 
-    # ---------- Citations (Dropdown) ----------
     with st.expander("📌 Citations", expanded=False):
         if not meta.get("doc_chunks") and not meta.get("web_docs"):
             st.write("No citations available.")
@@ -68,7 +85,6 @@ def display_answer_metadata():
                     f"- **[Web]** Tavily: “{web.metadata.get('title', 'Unknown')}”"
                 )
 
-    # ---------- Top-N Summaries (Dropdown) ----------
     if meta.get("doc_summaries"):
         with st.expander("📝 Top Document Summaries", expanded=False):
             for summary in meta["doc_summaries"]:
@@ -76,7 +92,15 @@ def display_answer_metadata():
 
 
 def init_session_state():
-    """Initialize Streamlit session state variables."""
+    """
+    Initializes required Streamlit session state variables.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -90,11 +114,16 @@ def init_session_state():
         st.session_state.temp_dir = tempfile.mkdtemp()
 
 
-# --------------------------------------------------
-# Chat History
-# --------------------------------------------------
 def display_chat_history():
-    """Display all messages in the chat history."""
+    """
+    Displays the full chat history.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     init_session_state()
 
     for message in st.session_state.messages:
@@ -108,7 +137,17 @@ def display_chat_history():
 
 
 def add_message(role: str, content: str, sources: List[str] = None):
-    """Add a message to chat history."""
+    """
+    Adds a message to the chat history.
+
+    Args:
+        role: Role of the message sender.
+        content: Message content.
+        sources: Optional list of sources.
+
+    Returns:
+        None
+    """
     message = {"role": role, "content": content}
     if sources:
         message["sources"] = sources
@@ -116,16 +155,27 @@ def add_message(role: str, content: str, sources: List[str] = None):
 
 
 def clear_chat_history():
-    """Clear all messages from chat history."""
+    """
+    Clears all chat messages.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     st.session_state.messages = []
 
 
-# --------------------------------------------------
-# File Handling
-# --------------------------------------------------
 def save_uploaded_file(uploaded_file) -> str:
     """
-    Save an uploaded file to a temporary session directory.
+    Saves an uploaded file to a temporary directory.
+
+    Args:
+        uploaded_file: File uploaded through Streamlit.
+
+    Returns:
+        Path to the saved file.
     """
     init_session_state()
 
@@ -137,11 +187,16 @@ def save_uploaded_file(uploaded_file) -> str:
     return file_path
 
 
-# --------------------------------------------------
-# Sidebar
-# --------------------------------------------------
 def display_sidebar_info():
-    """Display information in the sidebar."""
+    """
+    Displays sidebar content and controls.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     init_session_state()
 
     with st.sidebar:
@@ -174,11 +229,16 @@ def display_sidebar_info():
             st.rerun()
 
 
-# --------------------------------------------------
-# Widgets
-# --------------------------------------------------
 def display_file_uploader():
-    """Display file upload widget."""
+    """
+    Displays the document upload widget.
+
+    Args:
+        None
+
+    Returns:
+        Uploaded files.
+    """
     return st.file_uploader(
         "Upload your documents (PDF or TXT)",
         type=["pdf", "txt"],
@@ -188,7 +248,16 @@ def display_file_uploader():
 
 
 def display_processing_status(message: str, status: str = "info"):
-    """Display a status message."""
+    """
+    Displays a status message in the UI.
+
+    Args:
+        message: Message to display.
+        status: Type of status message.
+
+    Returns:
+        None
+    """
     if status == "success":
         st.success(message)
     elif status == "warning":
@@ -200,14 +269,34 @@ def display_processing_status(message: str, status: str = "info"):
 
 
 def create_web_search_toggle() -> bool:
-    """Create a toggle for enabling web search."""
+    """
+    Displays a toggle to enable or disable web search.
+
+    Args:
+        None
+
+    Returns:
+        True if enabled, otherwise False.
+    """
     return st.toggle(
         "🌐 Enable Web Search",
         value=False,
         help="When enabled, the chatbot will also search the web"
     )
 
+
 def display_evidence(answer: str, docs: list, web_used: bool):
+    """
+    Displays answer content along with document and web evidence.
+
+    Args:
+        answer: Generated answer text.
+        docs: List of document evidence.
+        web_used: Flag indicating whether web evidence was used.
+
+    Returns:
+        None
+    """
     tabs = st.tabs(["✅ Answer", "📄 Documents", "🌐 Web"])
 
     with tabs[0]:

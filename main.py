@@ -20,7 +20,11 @@ st.set_page_config(
 
 
 def main():
-    # ---------------- Session Init ----------------
+    """
+    Runs the main Streamlit application.
+    It initializes session state, handles document processing,
+    manages chat interaction, and displays responses.
+    """
     init_session_state()
     display_sidebar_info()
 
@@ -29,13 +33,11 @@ def main():
 
     chat_interface: ChatInterface = st.session_state.chat_interface
 
-    # ---------------- Sidebar Controls ----------------
     with st.sidebar:
         retrieval_mode = retrieval_mode_selector()
         uploaded_files = display_file_uploader()
         process_clicked = process_documents_button()
 
-    # ---------------- Document Processing ----------------
     if process_clicked:
         if not uploaded_files:
             st.warning("Please upload at least one document.")
@@ -44,10 +46,8 @@ def main():
                 chunk_count = chat_interface.process_uploaded_files(uploaded_files)
                 st.success(f"✅ Indexed {chunk_count} chunks")
 
-    # ---------------- Chat History ----------------
     display_chat_history()
 
-    # ---------------- Chat Input ----------------
     user_query = st.chat_input("Ask a question...")
 
     if user_query:
@@ -70,7 +70,6 @@ def main():
             chat_interface.get_sources(user_query, retrieval_mode)
         )
 
-        # ---- Visual indicators + citations + summaries ----
         display_answer_metadata()
 
 
